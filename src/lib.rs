@@ -2,6 +2,7 @@
 
 use std::cell::Cell;
 use std::os::raw::*;
+use winapi::shared::minwindef::{BOOL, DWORD, HMODULE, LPVOID, TRUE};
 
 mod ats_plugin;
 use ats_plugin::*;
@@ -14,12 +15,9 @@ thread_local! {
     static REVERSER: Cell<c_int> = Cell::new(0);
 }
 
-use winapi::shared::minwindef;
-use winapi::shared::minwindef::{BOOL, DWORD, HINSTANCE, LPVOID};
-
 #[no_mangle]
 #[allow(non_snake_case)]
-extern "system" fn DllMain(_dll_module: HINSTANCE, call_reason: DWORD, _reserved: LPVOID) -> BOOL {
+extern "system" fn DllMain(_dll_module: HMODULE, call_reason: DWORD, _reserved: LPVOID) -> BOOL {
     const DLL_PROCESS_ATTACH: DWORD = 1;
     const DLL_THREAD_ATTACH: DWORD = 2;
     const DLL_THREAD_DETACH: DWORD = 3;
@@ -33,7 +31,7 @@ extern "system" fn DllMain(_dll_module: HINSTANCE, call_reason: DWORD, _reserved
         _ => (),
     }
 
-    minwindef::TRUE
+    TRUE
 }
 
 // Called when this plug-in is loaded
