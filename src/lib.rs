@@ -1,5 +1,7 @@
 #![cfg(windows)]
 
+use std::os::raw::*;
+
 mod ats_plugin;
 use ats_plugin::*;
 
@@ -8,9 +10,9 @@ const ARRAY_LENGTH: usize = 256;
 use std::cell::RefCell;
 
 thread_local! {
-    static POWER: RefCell<i32> = RefCell::new(0);
-    static BRAKE: RefCell<i32> = RefCell::new(0);
-    static REVERSER: RefCell<i32> = RefCell::new(0);
+    static POWER: RefCell<c_int> = RefCell::new(0);
+    static BRAKE: RefCell<c_int> = RefCell::new(0);
+    static REVERSER: RefCell<c_int> = RefCell::new(0);
 }
 
 use winapi::shared::minwindef;
@@ -47,7 +49,7 @@ pub extern "system" fn Dispose() {}
 
 // Returns the version numbers of ATS plug-in
 #[no_mangle]
-pub extern "system" fn GetPluginVersion() -> i32 {
+pub extern "system" fn GetPluginVersion() -> c_int {
     ATS_VERSION
 }
 
@@ -59,15 +61,15 @@ pub extern "system" fn SetVehicleSpec(_vehicle_spec: AtsVehicleSpec) {}
 // Called when the game is started
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn Initialize(_brake: i32) {}
+pub extern "system" fn Initialize(_brake: c_int) {}
 
 // Called every frame
 #[no_mangle]
 #[allow(non_snake_case)]
 pub extern "system" fn Elapse(
     _vehicle_state: AtsVehicleState,
-    p_panel: *mut i32,
-    p_sound: *mut i32,
+    p_panel: *mut c_int,
+    p_sound: *mut c_int,
 ) -> AtsHandles {
     let _panel = unsafe { std::slice::from_raw_parts_mut(p_panel, ARRAY_LENGTH) };
     let _sound = unsafe { std::slice::from_raw_parts_mut(p_sound, ARRAY_LENGTH) };
@@ -83,7 +85,7 @@ pub extern "system" fn Elapse(
 // Called when the power is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetPower(_notch: i32) {
+pub extern "system" fn SetPower(_notch: c_int) {
     POWER.with(|value| {
         *value.borrow_mut() = _notch;
     });
@@ -92,7 +94,7 @@ pub extern "system" fn SetPower(_notch: i32) {
 // Called when the brake is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetBrake(_notch: i32) {
+pub extern "system" fn SetBrake(_notch: c_int) {
     BRAKE.with(|value| {
         *value.borrow_mut() = _notch;
     });
@@ -101,7 +103,7 @@ pub extern "system" fn SetBrake(_notch: i32) {
 // Called when the reverser is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetReverser(_pos: i32) {
+pub extern "system" fn SetReverser(_pos: c_int) {
     REVERSER.with(|value| {
         *value.borrow_mut() = _pos;
     });
@@ -110,17 +112,17 @@ pub extern "system" fn SetReverser(_pos: i32) {
 // Called when any ATS key is pressed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn KeyDown(_ats_key_code: i32) {}
+pub extern "system" fn KeyDown(_ats_key_code: c_int) {}
 
 // Called when any ATS key is released
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn KeyUp(_ats_key_code: i32) {}
+pub extern "system" fn KeyUp(_ats_key_code: c_int) {}
 
 // Called when the horn is used
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn HornBlow(_horn_type: i32) {}
+pub extern "system" fn HornBlow(_horn_type: c_int) {}
 
 // Called when the door is opened
 #[no_mangle]
@@ -135,7 +137,7 @@ pub extern "system" fn DoorClose() {}
 // Called when current signal is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetSignal(_signal: i32) {}
+pub extern "system" fn SetSignal(_signal: c_int) {}
 
 // Called when the beacon data is received
 #[no_mangle]
