@@ -1,5 +1,6 @@
 #![cfg(windows)]
 
+use std::cell::Cell;
 use std::os::raw::*;
 
 mod ats_plugin;
@@ -7,12 +8,10 @@ use ats_plugin::*;
 
 const ARRAY_LENGTH: usize = 256;
 
-use std::cell::RefCell;
-
 thread_local! {
-    static POWER: RefCell<c_int> = RefCell::new(0);
-    static BRAKE: RefCell<c_int> = RefCell::new(0);
-    static REVERSER: RefCell<c_int> = RefCell::new(0);
+    static POWER: Cell<c_int> = Cell::new(0);
+    static BRAKE: Cell<c_int> = Cell::new(0);
+    static REVERSER: Cell<c_int> = Cell::new(0);
 }
 
 use winapi::shared::minwindef;
@@ -75,9 +74,9 @@ pub extern "system" fn Elapse(
     let _sound = unsafe { std::slice::from_raw_parts_mut(p_sound, ARRAY_LENGTH) };
 
     AtsHandles {
-        brake: BRAKE.with(|value| *value.borrow()),
-        power: POWER.with(|value| *value.borrow()),
-        reverser: REVERSER.with(|value| *value.borrow()),
+        brake: BRAKE.with(Cell::get),
+        power: POWER.with(Cell::get),
+        reverser: REVERSER.with(Cell::get),
         constant_speed: ATS_CONSTANTSPEED_CONTINUE,
     }
 }
@@ -85,27 +84,27 @@ pub extern "system" fn Elapse(
 // Called when the power is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetPower(_notch: c_int) {
-    POWER.with(|value| {
-        *value.borrow_mut() = _notch;
+pub extern "system" fn SetPower(notch: c_int) {
+    POWER.with(|power| {
+        power.set(notch);
     });
 }
 
 // Called when the brake is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetBrake(_notch: c_int) {
-    BRAKE.with(|value| {
-        *value.borrow_mut() = _notch;
+pub extern "system" fn SetBrake(notch: c_int) {
+    BRAKE.with(|brake| {
+        brake.set(notch);
     });
 }
 
 // Called when the reverser is changed
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn SetReverser(_pos: c_int) {
-    REVERSER.with(|value| {
-        *value.borrow_mut() = _pos;
+pub extern "system" fn SetReverser(pos: c_int) {
+    REVERSER.with(|reverser| {
+        reverser.set(pos);
     });
 }
 
