@@ -2,7 +2,7 @@
 
 ## Overview
 
-A BVE Trainsim ATS-Plugin experimental implementation with Rust. This is my first Rust programming result, so the implementation and its process may not be so sophisticated.
+A BVE Trainsim ATS-Plugin implementation template in Rust.
 
 ## License
 
